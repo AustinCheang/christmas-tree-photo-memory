@@ -50,55 +50,10 @@ export default function App() {
   const [mode, setMode] = useState<TreeMode>(TreeMode.FORMED);
   const [handPosition, setHandPosition] = useState<{ x: number; y: number; detected: boolean }>({ x: 0.5, y: 0.5, detected: false });
   const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
-  const [isLoadingShare, setIsLoadingShare] = useState(false);
-  const [isSharedView, setIsSharedView] = useState(false);
   const [twoHandsDetected, setTwoHandsDetected] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [showState, setShowState] = useState<ShowState>('idle');
   const { play: playAudio, stop: stopAudio } = useChristmasAudio();
-
-  // Check for share parameter in URL on mount
-  useEffect(() => {
-    const loadSharedPhotos = async () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const shareId = urlParams.get('share');
-
-      if (!shareId) return;
-
-      setIsSharedView(true);
-      setIsLoadingShare(true);
-
-      try {
-        // Try API first (works in vercel dev and production)
-        try {
-          const response = await fetch(`/api/share?id=${shareId}`);
-          const data = await response.json();
-
-          if (response.ok && data.success) {
-            setUploadedPhotos(data.images);
-            return;
-          }
-        } catch (apiError) {
-          console.log('API not available, trying localStorage fallback');
-        }
-
-        // Fallback to localStorage if API fails (pure vite dev mode)
-        const shareDataStr = localStorage.getItem(`share_${shareId}`);
-        if (shareDataStr) {
-          const shareData = JSON.parse(shareDataStr);
-          setUploadedPhotos(shareData.images);
-        } else {
-          console.error('Share not found');
-        }
-      } catch (error) {
-        console.error('Error loading shared photos:', error);
-      } finally {
-        setIsLoadingShare(false);
-      }
-    };
-
-    loadSharedPhotos();
-  }, []);
 
   const toggleMode = () => {
     setMode((prev) => (prev === TreeMode.FORMED ? TreeMode.CHAOS : TreeMode.FORMED));
@@ -173,20 +128,10 @@ export default function App() {
         onToggle={toggleMode}
         onPhotosUpload={handlePhotosUpload}
         hasPhotos={uploadedPhotos.length > 0}
-        isSharedView={isSharedView}
         showState={showState}
         onStartShow={handleStartShow}
         onStopShow={handleStopShow}
       />
-      
-      {/* Loading indicator for shared photos */}
-      {isLoadingShare && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80">
-          <div className="text-[#D4AF37] font-serif text-xl">
-            Loading shared photos...
-          </div>
-        </div>
-      )}
       
       {/* Gesture Control Module */}
       <GestureController currentMode={mode} onModeChange={setMode} onHandPosition={handleHandPosition} onTwoHandsDetected={handleTwoHandsDetected} onSwipe={handleSwipe} />

@@ -6,21 +6,18 @@ interface UIOverlayProps {
   onToggle: () => void;
   onPhotosUpload: (photos: string[]) => void;
   hasPhotos: boolean;
-  isSharedView: boolean;
   showState: ShowState;
   onStartShow: () => void;
   onStopShow: () => void;
 }
 
-export const UIOverlay: React.FC<UIOverlayProps> = ({ mode, onToggle, onPhotosUpload, hasPhotos, isSharedView, showState, onStartShow, onStopShow }) => {
-  const isFormed = mode === TreeMode.FORMED;
+export const UIOverlay: React.FC<UIOverlayProps> = ({ mode, onToggle, onPhotosUpload, hasPhotos, showState, onStartShow, onStopShow }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    const photoUrls: string[] = [];
     const readers: Promise<string>[] = [];
 
     for (let i = 0; i < files.length; i++) {
@@ -49,50 +46,28 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({ mode, onToggle, onPhotosUp
     fileInputRef.current?.click();
   };
 
-  const handleCreateMine = () => {
-    // Clear URL params, refresh page
-    window.location.href = window.location.origin;
-  };
-
   return (
     <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-10">
-      
-      {/* Header - More spacing from tree */}
+
+      {/* Header */}
       <header className="absolute top-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center">
         <h1 className="text-3xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F5E6BF] to-[#D4AF37] font-serif drop-shadow-lg tracking-wider text-center">
           Merry Christmas
         </h1>
       </header>
 
-      {/* Right Bottom Action Area */}
-      <div className="absolute bottom-8 right-8 flex flex-col items-end gap-4 pointer-events-auto">
-        
-        {/* Hidden file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={handleFileChange}
-          className="hidden"
-        />
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={handleFileChange}
+        className="hidden"
+      />
 
-        {/* Shared View: Show "Create My Tree" button */}
-        {isSharedView && (
-          <button
-            onClick={handleCreateMine}
-            className="group px-6 py-3 border-2 border-[#D4AF37] bg-black/70 backdrop-blur-md overflow-hidden transition-all duration-500 hover:shadow-[0_0_30px_#D4AF37] hover:border-[#fff] hover:bg-[#D4AF37]/20"
-          >
-            <span className="relative z-10 font-serif text-base md:text-lg text-[#D4AF37] tracking-[0.1em] group-hover:text-white transition-colors whitespace-nowrap">
-              Create My Tree
-            </span>
-          </button>
-        )}
-
-      </div>
-
-      {/* Bottom Left: Upload Button - Out of the way */}
-      {!isSharedView && !hasPhotos && (
+      {/* Bottom Left: Upload Button */}
+      {!hasPhotos && (
         <div className="absolute bottom-8 left-8 pointer-events-auto">
           <button
             onClick={handleUploadClick}
@@ -108,10 +83,10 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({ mode, onToggle, onPhotosUp
         </div>
       )}
 
-      {/* Bottom Center: Minimal Show Controls */}
-      {!isSharedView && hasPhotos && (
+      {/* Bottom Center: Show Controls */}
+      {hasPhotos && (
         <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 pointer-events-auto">
-          {/* Play Button - Small and subtle */}
+          {/* Play Button */}
           {(showState === 'idle' || showState === 'stopped') && (
             <button
               onClick={onStartShow}
@@ -126,7 +101,7 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({ mode, onToggle, onPhotosUp
             </button>
           )}
 
-          {/* Waiting State - Minimal */}
+          {/* Waiting State */}
           {showState === 'waiting' && (
             <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#D4AF37]/30 bg-black/50 backdrop-blur-sm">
               <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse"></span>
@@ -134,7 +109,7 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({ mode, onToggle, onPhotosUp
             </div>
           )}
 
-          {/* Stop Button - Minimal */}
+          {/* Stop Button */}
           {showState === 'playing' && (
             <button
               onClick={onStopShow}
